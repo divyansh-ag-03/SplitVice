@@ -642,4 +642,3 @@ Over:
 Built by Divyansh.
 
 Inspired by Splitwise, rebuilt with a pragmatic Python-first architecture focused on correctness, maintainability, and production-style backend engineering.
-````
