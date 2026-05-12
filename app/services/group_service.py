@@ -108,10 +108,26 @@ async def create_group(
 async def list_user_groups(
     db: AsyncSession, user_id: UUID
 ) -> list[GroupSummary]:
+    from app.services.balance_service import ZERO, _normalize
+    from app.repositories import balance_repository as balance_repo
+
     rows = await group_repo.list_user_groups(db, user_id)
     summaries = []
     for group, membership in rows:
         member_count = await group_repo.count_members(db, group.id)
+
+        # Compute the current user's net balance in this group
+        paid = await balance_repo.get_paid_totals(db, group.id)
+        owed = await balance_repo.get_owed_totals(db, group.id)
+        s_paid = await balance_repo.get_settlement_paid_totals(db, group.id)
+        s_received = await balance_repo.get_settlement_received_totals(db, group.id)
+        user_balance = _normalize(
+            paid.get(user_id, ZERO)
+            - owed.get(user_id, ZERO)
+            + s_paid.get(user_id, ZERO)
+            - s_received.get(user_id, ZERO)
+        )
+
         summaries.append(
             GroupSummary(
                 id=group.id,
@@ -120,6 +136,7 @@ async def list_user_groups(
                 created_at=group.created_at,
                 current_user_role=membership.role,
                 member_count=member_count,
+                user_balance=user_balance,
             )
         )
     return summaries
