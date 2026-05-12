@@ -23,15 +23,8 @@ SplitVice focuses on:
 
 ## Dashboard Overview
 
-> Add Screenshot Here  
-> Suggested screenshot:
-> - User dashboard
-> - Group summaries
-> - Recent expenses
-> - Current balances
-
 ```md
-![Dashboard](screenshots/dashboard.png)
+<img src="screenshots/dashboard.png" width="100%"/>
 ```
 
 ---
