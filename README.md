@@ -23,52 +23,31 @@ SplitVice focuses on:
 
 ## Dashboard Overview
 
-```md
 <img src="screenshots/dashboard.png" width="100%"/>
-```
 
 ---
 
 ## Group Balances & Settlement Suggestions
 
-> Add Screenshot Here  
-> Suggested screenshot:
-> - "Who owes whom"
-> - Simplified settlements
-> - Group member balances
-
-```md
-![Balances](screenshots/balances.png)
-```
+<img src="screenshots/balances.png" width="100%"/>
 
 ---
 
 ## Expense Creation Flow
 
-> Add Screenshot Here  
-> Suggested screenshot:
-> - Expense form
-> - Participant selection
-> - Equal split preview
-> - HTMX interaction
+<img src="screenshots/expense-form.png" width="75%"/>
 
-```md
-![Expense Form](screenshots/expense-form.png)
-```
+---
+
+## Settlement Recording
+
+<img src="screenshots/settlement-form.png" width="65%"/>
 
 ---
 
 ## Swagger API Documentation
 
-> Add Screenshot Here  
-> Suggested screenshot:
-> - FastAPI Swagger UI
-> - Expense endpoints
-> - Auth endpoints
-
-```md
-![Swagger](screenshots/swagger.png)
-```
+<img src="screenshots/swagger.png" width="100%"/>
 
 ---
 
