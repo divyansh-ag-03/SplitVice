@@ -1,4 +1,3 @@
-````markdown
 # SplitVice
 
 A production-style expense sharing platform inspired by Splitwise, built with FastAPI, HTMX, PostgreSQL, and async SQLAlchemy.
