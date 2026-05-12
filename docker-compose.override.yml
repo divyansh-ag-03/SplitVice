@@ -1,0 +1,18 @@
+# Development overrides — applied automatically when running `docker compose up`
+# in the project root. Do NOT commit secrets to this file.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Mount source code for live reload (changes take effect without rebuild)
+    volumes:
+      - ./app:/app/app
+      - ./migrations:/app/migrations
+      - ./alembic.ini:/app/alembic.ini
+    environment:
+      DEBUG: "true"
+    # Override the production CMD to enable --reload
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
