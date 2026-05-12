@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — SplitVice{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+  <div>
+    <a href="/dashboard" class="text-sm text-indigo-600 hover:underline">← Dashboard</a>
+    <h1 class="text-xl font-bold text-gray-900 mt-1">{{ group.name }}</h1>
+    {% if group.description %}
+    <p class="text-sm text-gray-500 mt-0.5">{{ group.description }}</p>
+    {% endif %}
+  </div>
+  <div class="flex gap-2 shrink-0">
+    <a href="/groups/{{ group.id }}/expenses/new"
+      class="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-medium
+             hover:bg-indigo-700 transition-colors">
+      + Expense
+    </a>
+    <a href="/groups/{{ group.id }}/settlements/new"
+      class="bg-emerald-600 text-white text-sm px-4 py-2 rounded-lg font-medium
+             hover:bg-emerald-700 transition-colors">
+      Settle up
+    </a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Left column: Balances + Members -->
+  <div class="space-y-4">
+
+    <!-- Balances -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <h2 class="text-sm font-semibold text-gray-700 mb-4">Balances</h2>
+      {% if balances %}
+      <ul class="space-y-3">
+        {% for b in balances %}
+        <li class="flex items-center justify-between">
+          <span class="text-sm text-gray-700">{{ b.display_name }}</span>
+          {% set net = b.net_balance | float %}
+          {% if net > 0 %}
+            <span class="text-sm font-bold text-green-600">+{{ "%.2f"|format(net) }}</span>
+          {% elif net < 0 %}
+            <span class="text-sm font-bold text-red-500">{{ "%.2f"|format(net) }}</span>
+          {% else %}
+            <span class="text-xs font-medium text-gray-400">✓ Settled</span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-xs text-gray-400">No balances yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Simplified debts -->
+    {% if simplified_debts %}
+    <div class="bg-amber-50 rounded-xl border border-amber-200 p-5">
+      <h2 class="text-sm font-semibold text-amber-800 mb-3">Who pays whom</h2>
+      <ul class="space-y-2">
+        {% for d in simplified_debts %}
+        <li class="text-sm text-amber-900">
+          <span class="font-semibold">{{ d.from_name }}</span>
+          <span class="text-amber-500 mx-1">→</span>
+          <span class="font-semibold">{{ d.to_name }}</span>
+          <span class="font-bold ml-1">{{ "%.2f"|format(d.amount | float) }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% else %}
+    <div class="bg-green-50 rounded-xl border border-green-200 p-5 text-center">
+      <p class="text-sm font-medium text-green-700">✓ You're all settled up</p>
+    </div>
+    {% endif %}
+
+    <!-- Members -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <h2 class="text-sm font-semibold text-gray-700 mb-4">Members</h2>
+      <ul class="space-y-2.5">
+        {% for m in group.members %}
+        <li class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 text-xs
+                        font-bold flex items-center justify-center shrink-0">
+              {{ m.name[0].upper() }}
+            </div>
+            <span class="text-sm text-gray-700">{{ m.name }}</span>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium
+            {% if m.role == 'admin' %}bg-indigo-100 text-indigo-700
+            {% else %}bg-gray-100 text-gray-500{% endif %}">
+            {{ m.role }}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+
+      {% if is_admin %}
+      <form method="post" action="/groups/{{ group.id }}/members" class="mt-4 flex gap-2">
+        <input type="email" name="email" placeholder="Add by email"
+          class="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-xs
+                 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        <button type="submit"
+          class="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-lg
+                 hover:bg-gray-200 transition-colors font-medium">
+          Add
+        </button>
+      </form>
+      {% if member_error %}
+      <p class="text-xs text-red-600 mt-2">{{ member_error }}</p>
+      {% endif %}
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Right column: Expenses + Settlements -->
+  <div class="lg:col-span-2 space-y-4">
+
+    <!-- Expenses -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-700">Expenses</h2>
+        <a href="/groups/{{ group.id }}/expenses/new"
+          class="text-xs text-indigo-600 hover:underline font-medium">+ Add</a>
+      </div>
+
+      {% if expenses %}
+      <ul class="divide-y divide-gray-100">
+        {% for e in expenses %}
+        <li class="py-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-medium text-gray-900 text-sm truncate">{{ e.description }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">
+                Paid by <span class="font-medium text-gray-600">{{ e.payer_name }}</span>
+                · {{ e.expense_date }}
+                · {{ e.split_count }} split{{ 's' if e.split_count != 1 }}
+              </p>
+            </div>
+            <span class="text-sm font-bold text-gray-800 shrink-0">
+              {{ "%.2f"|format(e.amount | float) }}
+            </span>
+          </div>
+          {% if e.creator_id | string == current_user.id | string %}
+          <div class="flex items-center gap-2 mt-2">
+            <a href="/expenses/{{ e.id }}/edit"
+              class="text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200
+                     rounded-lg px-3 py-1 hover:bg-indigo-100 transition-colors">
+              ✏️ Edit
+            </a>
+            <form method="post" action="/expenses/{{ e.id }}/delete"
+              onsubmit="return confirm('Delete this expense?')">
+              <button type="submit"
+                class="text-xs font-medium bg-red-50 text-red-600 border border-red-200
+                       rounded-lg px-3 py-1 hover:bg-red-100 transition-colors">
+                🗑 Delete
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="text-center py-8">
+        <p class="text-sm text-gray-400">No expenses yet.</p>
+        <a href="/groups/{{ group.id }}/expenses/new"
+          class="text-xs text-indigo-600 hover:underline mt-1 inline-block">
+          Add the first expense →
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Settlements -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-700">Settlements</h2>
+        <a href="/groups/{{ group.id }}/settlements/new"
+          class="text-xs text-emerald-600 hover:underline font-medium">+ Record</a>
+      </div>
+
+      {% if settlements %}
+      <ul class="divide-y divide-gray-100">
+        {% for s in settlements %}
+        <li class="py-3 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm text-gray-800">
+              <span class="font-semibold">{{ s.payer_name }}</span>
+              <span class="text-gray-400 mx-1">paid</span>
+              <span class="font-semibold">{{ s.payee_name }}</span>
+            </p>
+            <p class="text-xs text-gray-400 mt-0.5">
+              {{ s.settlement_date }}
+              {% if s.description %} · {{ s.description }}{% endif %}
+            </p>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-sm font-bold text-emerald-600">
+              {{ "%.2f"|format(s.amount | float) }}
+            </span>
+            {% if s.creator_id | string == current_user.id | string %}
+            <form method="post" action="/settlements/{{ s.id }}/delete"
+              onsubmit="return confirm('Delete this settlement?')">
+              <button type="submit"
+                class="text-xs text-red-400 hover:text-red-600 transition-colors">
+                Delete
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="text-center py-8">
+        <p class="text-sm text-gray-400">No settlements recorded yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}{% if editing %}Edit Expense{% else %}Add Expense{% endif %} — SplitVice{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+
+  <div class="mb-6">
+    <a href="/groups/{{ group.id }}" class="text-sm text-indigo-600 hover:underline">← {{ group.name }}</a>
+    <h1 class="text-xl font-bold text-gray-900 mt-2">
+      {% if editing %}Edit expense{% else %}Add expense{% endif %}
+    </h1>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+
+    {% if error %}
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-5">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post"
+      action="{% if editing %}/expenses/{{ expense_id }}/edit{% else %}/groups/{{ group.id }}/expenses{% endif %}"
+      id="expense-form"
+      class="space-y-5">
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+        <input type="text" name="description" id="description"
+          value="{{ description or '' }}" required
+          placeholder="e.g. Dinner, Hotel, Groceries"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+      </div>
+
+      <!-- Amount + Date -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Total amount</label>
+          <input type="number" name="amount" id="total-amount"
+            value="{{ amount or '' }}" step="0.01" min="0.01" required
+            placeholder="0.00"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Date</label>
+          <input type="date" name="expense_date"
+            value="{{ expense_date or today }}" required
+            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        </div>
+      </div>
+
+      <!-- Paid by -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Paid by</label>
+        <select name="payer_id" required
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white">
+          {% for m in members %}
+          <option value="{{ m.user_id }}"
+            {% if payer_id and m.user_id | string == payer_id | string %}selected
+            {% elif not payer_id and m.user_id | string == current_user.id | string %}selected
+            {% endif %}>
+            {{ m.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Split section -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-sm font-medium text-gray-700">Split between</label>
+          <button type="button" id="split-equally-btn"
+            class="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200
+                   rounded-lg px-3 py-1.5 hover:bg-indigo-100 transition-colors">
+            ÷ Split equally
+          </button>
+        </div>
+
+        <div class="space-y-2 rounded-lg border border-gray-100 p-3 bg-gray-50" id="split-rows">
+          {% for m in members %}
+          {% set existing_amount = existing_splits[m.user_id | string] if existing_splits and m.user_id | string in existing_splits else '' %}
+          <div class="flex items-center gap-3 bg-white rounded-lg border border-gray-200 px-3 py-2"
+               data-member-row>
+            <input type="checkbox"
+              id="check-{{ m.user_id }}"
+              class="member-checkbox w-4 h-4 text-indigo-600 rounded accent-indigo-600"
+              data-user-id="{{ m.user_id }}"
+              {% if existing_splits %}{% if existing_amount %}checked{% endif %}
+              {% else %}checked{% endif %} />
+
+            <input type="hidden" name="split_user_ids" class="member-uid-input"
+              value="{{ m.user_id }}"
+              {% if existing_splits and not existing_amount %}disabled{% endif %} />
+
+            <label for="check-{{ m.user_id }}"
+              class="text-sm text-gray-700 flex-1 cursor-pointer select-none truncate">
+              {{ m.name }}
+            </label>
+
+            <input type="number" name="split_amounts"
+              class="split-amount-input w-28 border border-gray-300 rounded-lg px-2.5 py-1.5
+                     text-sm text-right focus:outline-none focus:ring-2 focus:ring-indigo-500
+                     focus:border-transparent"
+              step="0.0001" min="0.0001" placeholder="0.00"
+              value="{{ existing_amount }}"
+              {% if existing_splits and not existing_amount %}disabled{% endif %} />
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Live sum -->
+        <div class="mt-2 flex items-center justify-between text-xs px-1">
+          <span class="text-gray-500">Split total: <span id="split-sum" class="font-semibold text-gray-700">0.00</span></span>
+          <span id="split-diff" class="hidden text-red-500 font-medium"></span>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="flex gap-3 pt-1">
+        <button type="submit"
+          class="flex-1 bg-indigo-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold
+                 hover:bg-indigo-700 transition-colors">
+          {% if editing %}Update expense{% else %}Save expense{% endif %}
+        </button>
+        <a href="/groups/{{ group.id }}"
+          class="flex-1 text-center border border-gray-300 rounded-lg px-4 py-2.5 text-sm
+                 font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  const form       = document.getElementById('expense-form');
+  const totalInput = document.getElementById('total-amount');
+  const splitBtn   = document.getElementById('split-equally-btn');
+  const sumDisplay = document.getElementById('split-sum');
+  const diffEl     = document.getElementById('split-diff');
+
+  function checkedRows() {
+    return [...document.querySelectorAll('[data-member-row]')]
+      .filter(r => r.querySelector('.member-checkbox').checked);
+  }
+  function total() { return parseFloat(totalInput.value) || 0; }
+
+  splitBtn.addEventListener('click', () => {
+    const rows = checkedRows(), t = total();
+    if (!rows.length) { alert('Select at least one person.'); return; }
+    if (t <= 0)       { alert('Enter the total amount first.'); return; }
+    const share = Math.floor(t / rows.length * 10000) / 10000;
+    const rem   = Math.round((t - share * rows.length) * 10000) / 10000;
+    rows.forEach((r, i) => {
+      r.querySelector('.split-amount-input').value = (i === 0 ? share + rem : share).toFixed(4);
+    });
+    updateSum();
+  });
+
+  document.querySelectorAll('.member-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const row = cb.closest('[data-member-row]');
+      const amt = row.querySelector('.split-amount-input');
+      const uid = row.querySelector('.member-uid-input');
+      if (!cb.checked) { amt.value = ''; amt.disabled = true;  uid.disabled = true; }
+      else             {               amt.disabled = false; uid.disabled = false; }
+      updateSum();
+    });
+  });
+
+  function updateSum() {
+    const t = total();
+    let s = 0;
+    document.querySelectorAll('.split-amount-input:not([disabled])').forEach(i => {
+      s += parseFloat(i.value) || 0;
+    });
+    s = Math.round(s * 10000) / 10000;
+    sumDisplay.textContent = s.toFixed(2);
+    const diff = Math.round((t - s) * 10000) / 10000;
+    if (t > 0 && Math.abs(diff) > 0.001) {
+      diffEl.textContent = diff > 0 ? `−${diff.toFixed(2)} remaining` : `+${Math.abs(diff).toFixed(2)} over`;
+      diffEl.classList.remove('hidden');
+    } else { diffEl.classList.add('hidden'); }
+  }
+
+  document.querySelectorAll('.split-amount-input').forEach(i => i.addEventListener('input', updateSum));
+  totalInput.addEventListener('input', updateSum);
+  updateSum();
+
+  form.addEventListener('submit', e => {
+    const t = total(); let s = 0;
+    document.querySelectorAll('.split-amount-input:not([disabled])').forEach(i => s += parseFloat(i.value) || 0);
+    if (Math.abs(Math.round((t - s) * 10000) / 10000) > 0.001) {
+      e.preventDefault();
+      diffEl.textContent = 'Split total must equal the expense amount.';
+      diffEl.classList.remove('hidden');
+      diffEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+})();
+</script>
+{% endblock %}

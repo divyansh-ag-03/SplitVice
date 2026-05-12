@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SplitVice — Simple expense sharing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }</style>
+</head>
+<body class="bg-white text-gray-900">
+
+  <!-- Navbar -->
+  <nav class="border-b border-gray-100">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <span class="text-lg font-bold text-indigo-600 tracking-tight">SplitVice</span>
+      <div class="flex items-center gap-3 text-sm">
+        {% if logged_in %}
+          <a href="/dashboard"
+            class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+            Dashboard
+          </a>
+          <form method="post" action="/logout" class="inline">
+            <button type="submit" class="text-gray-500 hover:text-red-600 transition-colors">
+              Sign out
+            </button>
+          </form>
+        {% else %}
+          <a href="/login" class="text-gray-600 hover:text-indigo-600 transition-colors">Sign in</a>
+          <a href="/register"
+            class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+            Get started
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
+    <span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-semibold
+                 px-3 py-1 rounded-full mb-6 tracking-wide uppercase">
+      Open source · Free to use
+    </span>
+    <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4">
+      Split expenses.<br class="hidden sm:block" />
+      <span class="text-indigo-600">No clutter.</span>
+    </h1>
+    <p class="text-lg text-gray-500 max-w-xl mx-auto mb-8">
+      Track shared costs with friends, roommates, or colleagues.
+      SplitVice keeps the math simple so you can focus on the fun.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="/register"
+        class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold
+               hover:bg-indigo-700 transition-colors text-sm">
+        Create free account
+      </a>
+      <a href="/login"
+        class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold
+               hover:bg-gray-50 transition-colors text-sm">
+        Sign in
+      </a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="bg-gray-50 border-y border-gray-100">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+      <h2 class="text-2xl font-bold text-center text-gray-900 mb-10">
+        Everything you need, nothing you don't
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+          <div class="text-2xl mb-3">👥</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Group expenses</h3>
+          <p class="text-sm text-gray-500">
+            Create groups for trips, households, or events. Add members and start tracking instantly.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+          <div class="text-2xl mb-3">⚡</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Equal split in one click</h3>
+          <p class="text-sm text-gray-500">
+            Select who's included and hit "Split equally" — amounts fill in automatically with exact Decimal math.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+          <div class="text-2xl mb-3">📊</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Simplified balances</h3>
+          <p class="text-sm text-gray-500">
+            See exactly who owes whom. Our algorithm minimises the number of transfers needed to settle up.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+          <div class="text-2xl mb-3">✅</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Record settlements</h3>
+          <p class="text-sm text-gray-500">
+            Mark payments as settled. Balances update instantly — no manual recalculation needed.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+          <div class="text-2xl mb-3">🔒</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Secure by default</h3>
+          <p class="text-sm text-gray-500">
+            JWT auth, bcrypt passwords, HttpOnly cookies. Your data stays yours.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+          <div class="text-2xl mb-3">🚀</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Fast &amp; lightweight</h3>
+          <p class="text-sm text-gray-500">
+            Server-rendered with HTMX. No heavy JavaScript bundles. Works on any device.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+    <h2 class="text-2xl font-bold text-center text-gray-900 mb-10">How it works</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+
+      <div>
+        <div class="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center
+                    justify-center text-lg font-bold mx-auto mb-4">1</div>
+        <h3 class="font-semibold text-gray-900 mb-1">Create a group</h3>
+        <p class="text-sm text-gray-500">
+          Name your group and invite friends by email.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center
+                    justify-center text-lg font-bold mx-auto mb-4">2</div>
+        <h3 class="font-semibold text-gray-900 mb-1">Add expenses</h3>
+        <p class="text-sm text-gray-500">
+          Log who paid and split the cost equally or with custom amounts.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center
+                    justify-center text-lg font-bold mx-auto mb-4">3</div>
+        <h3 class="font-semibold text-gray-900 mb-1">Settle up</h3>
+        <p class="text-sm text-gray-500">
+          See the minimal payments needed and record them when done.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="bg-indigo-600">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 text-center">
+      <h2 class="text-2xl font-bold text-white mb-3">Ready to split smarter?</h2>
+      <p class="text-indigo-200 mb-6 text-sm">Free to use. No credit card required.</p>
+      <a href="/register"
+        class="inline-block bg-white text-indigo-700 font-semibold px-6 py-3
+               rounded-lg hover:bg-indigo-50 transition-colors text-sm">
+        Create your free account
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-100">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row
+                items-center justify-between gap-3 text-xs text-gray-400">
+      <span class="font-semibold text-gray-500">SplitVice</span>
+      <div class="flex items-center gap-4">
+        <span>Built with FastAPI · SQLAlchemy · HTMX · TailwindCSS</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
