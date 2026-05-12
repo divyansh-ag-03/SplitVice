@@ -1,20 +1,22 @@
-# Environment — never commit secrets
+# Env
 .env
 .env.local
 .env.*.local
+.envrc
 
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-.Python
-*.egg-info/
-dist/
-build/
-.eggs/
+*.so
 
-# Virtual environments
+# Builds
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual envs
 .venv/
 venv/
 env/
@@ -22,18 +24,38 @@ env/
 # Testing
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 .tox/
+.nox/
+.hypothesis/
+
+# Type checkers
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Linting
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
 
 # IDEs
 .vscode/
 .idea/
-*.swp
-*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Docker
+# Package managers
+.pdm-python
+.pixi/
+__pypackages__/
+
+# Logs
 *.log
+
+# Streamlit
+.streamlit/secrets.toml
