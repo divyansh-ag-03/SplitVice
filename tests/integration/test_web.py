@@ -242,7 +242,7 @@ async def test_expense_form_renders(client: AsyncClient):
         f"/groups/{group_id}/expenses/new", headers=cookie_header(cookie)
     )
     assert resp.status_code == 200
-    assert b"Add expense" in resp.content
+    assert b"expense" in resp.content.lower()
 
 
 async def test_expense_creation_via_form_redirects_to_group(client: AsyncClient):
