@@ -59,3 +59,6 @@ __pypackages__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#Kiro
+.kiro/specs/expense-sharing-app
